@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -83,10 +84,38 @@ void processEditCL() // peremenna9a, kotoraja ni4ego ne vozvrashaet
     if (strcmp(currentCommand, "arow") == 0)
     {
     }
-    if (strcmp(currentCommand, "drows") == 0)
+    if (strcmp(currentCommand, "drow") == 0)
     {
         int n = readIntAttribute();
         int m = readIntAttribute();
+    }
+    if (strcmp(currentCommand, "drows") == 0)
+    {
+    }
+    if (strcmp(currentCommand, "icol") == 0)
+    {
+    }
+    if (strcmp(currentCommand, "acol") == 0)
+    {
+    }
+    if (strcmp(currentCommand, "dcol") == 0)
+    {
+    }
+    if (strcmp(currentCommand, "dcols") == 0)
+    {
+    }
+}
+
+bool processDataCL()
+{
+    if (isCLFinished())
+        return false;
+
+    char *currentCommand = argv_g[currentCLArg];
+
+    if (strcmp(currentCommand, "cset") == 0)
+    {
+        return true;
     }
 }
 
@@ -123,20 +152,59 @@ char *uniqCharacters(char *string)
 
     return output;
 }
+size_t substrCount(char *str, char *substr)
+{
+    printf(" Created new array");
+
+    int countInSub = strlen(str);
+    printf(" Created new array");
+
+    char *firsLine = malloc(strlen(str));
+    // strcpy(firsLine, str);
+    int endOfFirstLine = 0;
+
+    for (; str[endOfFirstLine] != '\n'; endOfFirstLine++)
+    {
+        firsLine[endOfFirstLine] = str[endOfFirstLine];
+    }
+    printf("%s", firsLine);
+
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {
     argc_g = argc; // novije globalnye peremennye
     argv_g = argv;
 
-    printf("hello world\n");
     initDelim(argc, argv);
-    printf("%s\n", delim.value);
 
-    printf("Unique: %s\n", uniqCharacters(delim.value));
+    char table[1024][1024];
 
-    printf("\n%d\n", positionOfCharacterInString("ffdpaabv", 'a'));
+    char row[1024];
 
-    processEditCL();
+    int isPossibleToRead = scanf("%s", row);
+    int rowNow = 0;
+    while (isPossibleToRead > 0)
+    {
+        strcpy(table[rowNow], row);
+        isPossibleToRead = scanf("%s", row);
+    }
+
+    for ()
+    // printf("%s\n", delim.value);
+
+    // printf("Unique: %s\n", uniqCharacters(delim.value));
+
+    // printf("%d\n", positionOfCharacterInString("ffdpaabv", 'a'));
+
+    // processEditCL();
+    // bool isPossibleFurther = processDataCL();
+
+    // while (isPossibleFurther)
+    // {
+    //     isPossibleFurther = processDataCL();
+    // }
+
     return 0;
 }

@@ -1,26 +1,56 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-int main(){
-    int num[5];
-   printf ("zadej 5 cisel\n");
+int get_sum1(int arr1[], int length)
+{
+    int x = 0;
+    int s = 0;
+    int sum_arr = 0;
+    while (x < 5)
+    {
+        s += arr1[x];
+        x++;
+    }
+    return s;
+}
+int get_sum2(int arr2[], int length)
+{
+    int x = 0;
+    int s = 0;
+    int sum_arr = 0;
+    while (x < 5)
+    {
+        s += arr2[x];
+        x++;
+    }
+    return s;
+}
+
+int main()
+{
+    int arr1[5];
+    int arr2[5];
+    printf("zadej 5 cisel\n");
+
     int i = 0;
-    while (i<5){
-        scanf("%d", &num [i]);
+    while (i < 5)
+    {
+        scanf("%d", &arr1[i]);
         i++;
     }
-    /*int prumer = (num[0]+num[1]+num[2]+num[3]+num[4])/5;
-    printf("Prumer je %d\n", prumer);*/
-    int sum = 0;
-    i = 0;
-    while (i<5){
-        sum +=num[i];
-        i++;
-    }
-    double avg = sum / 5.0 ;
-    printf (" prumer je %0.2f\n",avg );
+    printf("zadej jeste 5 cisel\n");
 
-   
+    int x = 0;
+    while (x < 5)
+    {
+        scanf("%d", &arr2[x]);
+        x++;
+    }
+    int sum1 = get_sum1(arr1, 5);
+    int sum2 = get_sum2(arr2, 5);
+    int suma = sum1 + sum2;
+    printf("soucet je %d\n", suma);
+
     return 0;
-
 }

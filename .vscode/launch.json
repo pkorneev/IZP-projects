@@ -10,10 +10,7 @@
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
-                "-d",
-                "iii",
-                "irow",
-                "4"
+                // "< table"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
