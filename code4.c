@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#define MAX_ROWS 103
+#define MAX_COLUMNS 103
+#define MAX_STRINGLENGTH 100
+
 struct Delim // structura delim
 {
     char *value;
@@ -14,6 +18,9 @@ struct Delim delim;
 int argc_g;
 char **argv_g;
 int currentCLArg = 0;
+
+char table[MAX_ROWS][MAX_COLUMNS][MAX_STRINGLENGTH];
+int rows, columns;
 
 void initDelim() // function (void)
 {
@@ -39,8 +46,8 @@ void initDelim() // function (void)
 bool isCLFinished()
 {
     bool result = currentCLArg < argc_g; // peremennaya result = currentCLArg < argc
-    if (result == false)                 // jesli nepravda-to
-        printf(" ERROR, %d index %d\n", argc_g, currentCLArg);
+    // if (result == false)                 // jesli nepravda-to
+    //     printf(" ERROR, %d index %d\n", argc_g, currentCLArg);
     return !result; //return obratniy result
 }
 
@@ -117,6 +124,8 @@ bool processDataCL()
     {
         return true;
     }
+
+    return false;
 }
 
 // Определение позиции символа в строке, для строки абв символ "в" будет 2
@@ -171,6 +180,49 @@ size_t substrCount(char *str, char *substr)
 
     return 0;
 }
+void readTable()
+{
+    char row[10240];
+
+    int IsPossibleToRead = scanf("%s", row);
+    int i;
+    while (IsPossibleToRead > 0)
+    {
+        char *bufferString = strtok(row, delim.value);
+
+        while (bufferString != NULL)
+        {
+            if (i == 0)
+            {
+                columns++;
+            }
+
+            strcpy(table[rows][i], bufferString);
+            bufferString = strtok(NULL, delim.value);
+            i++;
+        }
+        IsPossibleToRead = scanf("%s", row);
+        rows++;
+
+        i = 0;
+    }
+}
+
+void writeTable()
+{
+    int i;
+    for (i = 0; i < rows; i++)
+    {
+        int j = 0;
+        for (; j < columns; j++)
+        {
+            printf("%s", table[i][j]);
+            if (j < columns - 1)
+                printf("%s", delim.value);
+        }
+        printf("\n");
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -178,33 +230,17 @@ int main(int argc, char *argv[])
     argv_g = argv;
 
     initDelim(argc, argv);
+    delim.value = uniqCharacters(delim.value);
 
-    char table[1024][1024];
+    readTable();
 
-    char row[1024];
+    processEditCL();
+    bool isPossibleFurther = processDataCL();
 
-    int isPossibleToRead = scanf("%s", row);
-    int rowNow = 0;
-    while (isPossibleToRead > 0)
+    while (isPossibleFurther)
     {
-        strcpy(table[rowNow], row);
-        isPossibleToRead = scanf("%s", row);
+        isPossibleFurther = processDataCL();
     }
-
-    for ()
-    // printf("%s\n", delim.value);
-
-    // printf("Unique: %s\n", uniqCharacters(delim.value));
-
-    // printf("%d\n", positionOfCharacterInString("ffdpaabv", 'a'));
-
-    // processEditCL();
-    // bool isPossibleFurther = processDataCL();
-
-    // while (isPossibleFurther)
-    // {
-    //     isPossibleFurther = processDataCL();
-    // }
-
+    writeTable();
     return 0;
 }
