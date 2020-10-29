@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
+#include <math.h>
 #define MAX_ROWS 103
 #define MAX_COLUMNS 103
 #define MAX_STRINGLENGTH 100
@@ -74,6 +76,103 @@ int readIntAttribute()
     return buffer;
 }
 
+char *readStrAttribute()
+{
+    currentCLArg++;
+    if (isCLFinished())
+    {
+        printf("Cant read next word\n");
+        return NULL;
+    }
+
+    return argv_g[currentCLArg];
+}
+
+void irow(int r)
+{
+    rows += 1;
+    for (int i = rows; i >= r; i--)
+    {
+        for (int j = 0; j < columns; j++)
+        {
+            strcpy(table[i + 1][j], table[i][j]);
+        }
+    }
+
+    for (int i = 0; i < columns; i++)
+    {
+        strcpy(table[r][i], "");
+    }
+}
+void drow(int r)
+{
+    rows -= 1;
+    for (int i = r; i < rows; i++)
+    {
+        for (int j = 0; j < columns; j++)
+        {
+            strcpy(table[i][j], table[i + 1][j]);
+        }
+    }
+}
+void drows(int n, int m)
+{
+
+    int k = m + 1;
+
+    for (int i = 0; k < rows; i++)
+    {
+        for (int j = 0; j < columns; j++)
+        {
+            strcpy(table[i][j], table[k][j]);
+        }
+        k++;
+    }
+    rows = rows - (m - n + 1);
+}
+void icol(int c)
+{
+    for (int i = 0; i < rows; i++)
+    {
+
+        for (int j = columns; j >= c; j--)
+        {
+            strcpy(table[i][j + 1], table[i][j]);
+        }
+    }
+    columns += 1;
+    for (int i = 0; i < columns; i++)
+    {
+        strcpy(table[i][c], "");
+    }
+}
+void dcol(int c)
+{
+
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = c; j < columns; j++)
+        {
+            strcpy(table[i][j - 1], table[i][j]);
+        }
+    }
+    columns--;
+}
+void dcols(int n, int m)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        int k = m + 1;
+
+        for (int j = n; k < columns; j++)
+        {
+            strcpy(table[i][j], table[i][k]);
+            k++;
+        }
+    }
+    columns = columns - (m - n + 1);
+}
+
 void processEditCL() // peremenna9a, kotoraja ni4ego ne vozvrashaet
 {
     /**
@@ -87,29 +186,101 @@ void processEditCL() // peremenna9a, kotoraja ni4ego ne vozvrashaet
     if (strcmp(currentCommand, "irow") == 0) //sravnenije strok strcmp
     {
         int row = readIntAttribute(); // peremennaya row
+        irow(row - 1);
     }
     if (strcmp(currentCommand, "arow") == 0)
     {
+        rows += 1;
     }
     if (strcmp(currentCommand, "drow") == 0)
     {
-        int n = readIntAttribute();
-        int m = readIntAttribute();
+        int row = readIntAttribute();
+        drow(row - 1);
     }
     if (strcmp(currentCommand, "drows") == 0)
     {
+        int n = readIntAttribute();
+        int m = readIntAttribute();
+        if (m > n)
+        {
+            printf("Druhe cislo musi byt >= prvniho \n");
+        }
+        drows(n - 1, m - 1);
     }
     if (strcmp(currentCommand, "icol") == 0)
     {
+        int row = readIntAttribute();
+        icol(row - 1);
     }
     if (strcmp(currentCommand, "acol") == 0)
     {
+        columns += 1;
     }
     if (strcmp(currentCommand, "dcol") == 0)
     {
+        int row = readIntAttribute();
+        dcol(row);
     }
     if (strcmp(currentCommand, "dcols") == 0)
     {
+        int n = readIntAttribute();
+        int m = readIntAttribute();
+        if (m < n)
+        {
+            printf("Druhe cislo musi byt >= prvniho \n");
+            return;
+        }
+        dcols(n - 1, m - 1);
+    }
+}
+double stringToDouble(char *str)
+{
+    char *errors;
+    double output = strtod(str, &errors);
+
+    if (errors != NULL)
+    {
+        printf("\ncant cast %s to double \n", str);
+    }
+
+    return output;
+}
+
+void cset(int c, char *str)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        strcpy(table[i][c], str);
+    }
+}
+void tableRound(int c)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        double cell = stringToDouble(table[i][c]);
+        double roundedCell = round(cell);
+        sprintf(table[i][c], "%f", roundedCell);
+    }
+}
+
+void tableTollower(int c)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            table[i][c][j] = tolower(table[i][c][j]);
+        }
+    }
+}
+void tableToupper(int c)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            table[i][c][j] = toupper(table[i][c][j]);
+        }
     }
 }
 
@@ -122,9 +293,25 @@ bool processDataCL()
 
     if (strcmp(currentCommand, "cset") == 0)
     {
-        return true;
+        int c = readIntAttribute();
+        char *str = readStrAttribute();
+        cset(c - 1, str);
     }
-
+    if (strcmp(currentCommand, "tollower") == 0)
+    {
+        int c = readIntAttribute();
+        tableTollower(c - 1);
+    }
+    if (strcmp(currentCommand, "toupper") == 0)
+    {
+        int c = readIntAttribute();
+        tableToupper(c - 1);
+    }
+    if (strcmp(currentCommand, "round") == 0)
+    {
+        int c = readIntAttribute();
+        tableRound(c - 1);
+    }
     return false;
 }
 
@@ -188,11 +375,12 @@ void readTable()
     int i;
     while (IsPossibleToRead > 0)
     {
+
         char *bufferString = strtok(row, delim.value);
 
         while (bufferString != NULL)
         {
-            if (i == 0)
+            if (rows == 0)
             {
                 columns++;
             }
