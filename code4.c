@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <math.h>
-#define MAX_ROWS 103
-#define MAX_COLUMNS 103
+#define MAX_ROWS 1003
+#define MAX_COLUMNS 1003
 #define MAX_STRINGLENGTH 100
 
 struct Delim // structura delim
@@ -146,6 +146,7 @@ void icol(int c)
         strcpy(table[i][c], "");
     }
 }
+
 void dcol(int c)
 {
 
@@ -158,6 +159,10 @@ void dcol(int c)
     }
     columns--;
 }
+
+/**
+ * This function removes range of columns
+ */
 void dcols(int n, int m)
 {
     for (int i = 0; i < rows; i++)
@@ -175,143 +180,275 @@ void dcols(int n, int m)
 
 void processEditCL() // peremenna9a, kotoraja ni4ego ne vozvrashaet
 {
+    bool nothingToRead = isCLFinished();
+    bool changesApplied = false;
     /**
      * Если закончилась строка с аргументами командной строки - просто выфди из этой функции 
      */
-    if (isCLFinished())
-        return;
+    while (!nothingToRead && !changesApplied)
+    {
+        char *currentCommand = argv_g[currentCLArg]; //stroka currentcmd = massivu argv[currentCLArg]
 
-    char *currentCommand = argv_g[currentCLArg]; //stroka currentcmd = massivu argv[currentCLArg]
+        if (strcmp(currentCommand, "irow") == 0) //sravnenije strok strcmp
+        {
+            int row = readIntAttribute(); // peremennaya row
+            irow(row - 1);
+            changesApplied++;
+        }
+        if (strcmp(currentCommand, "arow") == 0)
+        {
+            rows += 1;
+            changesApplied++;
+        }
+        if (strcmp(currentCommand, "drow") == 0)
+        {
+            int row = readIntAttribute();
+            drow(row - 1);
+            changesApplied++;
+        }
+        if (strcmp(currentCommand, "drows") == 0)
+        {
+            int n = readIntAttribute();
+            int m = readIntAttribute();
+            if (m > n)
+            {
+                printf("Druhe cislo musi byt >= prvniho \n");
+            }
+            drows(n - 1, m - 1);
+            changesApplied++;
+        }
+        if (strcmp(currentCommand, "icol") == 0)
+        {
+            int row = readIntAttribute();
+            icol(row - 1);
+            changesApplied++;
+        }
+        if (strcmp(currentCommand, "acol") == 0)
+        {
+            columns += 1;
+            changesApplied++;
+        }
+        if (strcmp(currentCommand, "dcol") == 0)
+        {
+            int row = readIntAttribute();
+            dcol(row);
+            changesApplied++;
+        }
+        if (strcmp(currentCommand, "dcols") == 0)
+        {
+            int n = readIntAttribute();
+            int m = readIntAttribute();
+            if (m < n)
+            {
+                printf("Druhe cislo musi byt >= prvniho \n");
+                return;
+            }
+            dcols(n - 1, m - 1);
+            changesApplied++;
+        }
 
-    if (strcmp(currentCommand, "irow") == 0) //sravnenije strok strcmp
-    {
-        int row = readIntAttribute(); // peremennaya row
-        irow(row - 1);
-    }
-    if (strcmp(currentCommand, "arow") == 0)
-    {
-        rows += 1;
-    }
-    if (strcmp(currentCommand, "drow") == 0)
-    {
-        int row = readIntAttribute();
-        drow(row - 1);
-    }
-    if (strcmp(currentCommand, "drows") == 0)
-    {
-        int n = readIntAttribute();
-        int m = readIntAttribute();
-        if (m > n)
-        {
-            printf("Druhe cislo musi byt >= prvniho \n");
-        }
-        drows(n - 1, m - 1);
-    }
-    if (strcmp(currentCommand, "icol") == 0)
-    {
-        int row = readIntAttribute();
-        icol(row - 1);
-    }
-    if (strcmp(currentCommand, "acol") == 0)
-    {
-        columns += 1;
-    }
-    if (strcmp(currentCommand, "dcol") == 0)
-    {
-        int row = readIntAttribute();
-        dcol(row);
-    }
-    if (strcmp(currentCommand, "dcols") == 0)
-    {
-        int n = readIntAttribute();
-        int m = readIntAttribute();
-        if (m < n)
-        {
-            printf("Druhe cislo musi byt >= prvniho \n");
-            return;
-        }
-        dcols(n - 1, m - 1);
+        if (!changesApplied)
+            break;
+
+        changesApplied = false;
+        currentCLArg++;
+        nothingToRead = isCLFinished();
     }
 }
+
 double stringToDouble(char *str)
 {
     char *errors;
     double output = strtod(str, &errors);
 
-    if (errors != NULL)
-    {
-        printf("\ncant cast %s to double \n", str);
-    }
-
     return output;
 }
 
-void cset(int c, char *str)
+void cset(int i, int c, char *str)
 {
-    for (int i = 0; i < rows; i++)
-    {
-        strcpy(table[i][c], str);
-    }
+    strcpy(table[i][c], str);
 }
-void tableRound(int c)
+
+void tableRound(int i, int c)
 {
-    for (int i = 0; i < rows; i++)
+    double cell = stringToDouble(table[i][c]);
+    double roundedCell = round(cell);
+    sprintf(table[i][c], "%f", roundedCell);
+}
+
+void tableTollower(int i, int c)
+{
+    for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
-        double cell = stringToDouble(table[i][c]);
-        double roundedCell = round(cell);
-        sprintf(table[i][c], "%f", roundedCell);
+        table[i][c][j] = tolower(table[i][c][j]);
     }
 }
 
-void tableTollower(int c)
+void tableToupper(int i, int c)
+{
+    for (int j = 0; j < columns; j++)
+    {
+        table[i][c][j] = toupper(table[i][c][j]);
+    }
+}
+
+void tableCopy(int i, int n, int m)
+{
+    strcpy(table[i][m], table[i][n]);
+}
+
+void tableInt(int i, int c)
 {
     for (int i = 0; i < rows; i++)
     {
-        for (int j = 0; j < 5; j++)
+        char *endPTR;
+
+        double buffer = strtod(table[i][c], &endPTR);
+        if (strcmp(endPTR, "") == 0)
         {
-            table[i][c][j] = tolower(table[i][c][j]);
+            sprintf(table[i][c], "%d", (int)trunc(buffer));
         }
     }
 }
-void tableToupper(int c)
+
+void tableSwap(int i, int n, int m)
 {
-    for (int i = 0; i < rows; i++)
-    {
-        for (int j = 0; j < 5; j++)
-        {
-            table[i][c][j] = toupper(table[i][c][j]);
-        }
-    }
+    char buffer[MAX_STRINGLENGTH];
+
+    strcpy(buffer, table[i][n]);
+    strcpy(table[i][n], table[i][m]);
+    strcpy(table[i][m], buffer);
 }
 
 bool processDataCL()
 {
+
     if (isCLFinished())
         return false;
 
     char *currentCommand = argv_g[currentCLArg];
+    // Proccess if we have `rows` or `beginwith` or `contains`
 
-    if (strcmp(currentCommand, "cset") == 0)
+    int startIndex = 0, endIndex = rows;
+    int beginC = -1;
+    char *beginSTR;
+
+    int containsC = -1;
+    char *containsSTR;
+
+    if (strcmp(currentCommand, "rows") == 0)
     {
-        int c = readIntAttribute();
-        char *str = readStrAttribute();
-        cset(c - 1, str);
+        startIndex = readIntAttribute() - 1;
+        endIndex = readIntAttribute();
+
+        currentCLArg++;
+        currentCommand = argv_g[currentCLArg];
     }
-    if (strcmp(currentCommand, "tollower") == 0)
+
+    if (strcmp(currentCommand, "beginwith") == 0)
     {
-        int c = readIntAttribute();
-        tableTollower(c - 1);
+        beginC = readIntAttribute() - 1;
+        beginSTR = readStrAttribute();
+
+        currentCLArg++;
+        currentCommand = argv_g[currentCLArg];
     }
-    if (strcmp(currentCommand, "toupper") == 0)
+
+    if (strcmp(currentCommand, "contains") == 0)
     {
-        int c = readIntAttribute();
-        tableToupper(c - 1);
+        containsC = readIntAttribute() - 1;
+        containsSTR = readStrAttribute();
+
+        currentCLArg++;
+        currentCommand = argv_g[currentCLArg];
     }
-    if (strcmp(currentCommand, "round") == 0)
+
+    // Here the commands start
+    int c, n, m;
+    char *str;
+
+    for (int i = startIndex; i < endIndex; i++)
     {
-        int c = readIntAttribute();
-        tableRound(c - 1);
+        if (beginC != -1)
+        {
+            // Тут происходит получение номера позиции для подстроки в строке. Если в positionOfBEginStr кладется 0 - то эту строку таблицы мы обрабатываем
+            // иначе пропускаем итерацию цикла
+            char positionOfBeginStr = strstr(table[i][beginC], beginSTR) - table[i][beginC];
+
+            if (positionOfBeginStr != 0)
+                continue;
+        }
+
+        if (containsC != -1)
+        {
+            char *exists = strstr(table[i][containsC], containsSTR);
+            if (exists == NULL)
+                continue;
+        }
+
+        if (strcmp(currentCommand, "cset") == 0)
+        {
+            if (i == startIndex)
+            {
+                c = readIntAttribute();
+                str = readStrAttribute();
+            }
+
+            cset(i, c - 1, str);
+        }
+
+        if (strcmp(currentCommand, "tollower") == 0)
+        {
+            if (i == startIndex)
+                c = readIntAttribute();
+
+            tableTollower(i, c - 1);
+        }
+
+        if (strcmp(currentCommand, "toupper") == 0)
+        {
+            if (i == startIndex)
+                c = readIntAttribute();
+
+            tableToupper(i, c);
+        }
+
+        if (strcmp(currentCommand, "round") == 0)
+        {
+            if (i == 0)
+                c = readIntAttribute();
+
+            tableRound(i, c - 1);
+        }
+
+        if (strcmp(currentCommand, "swap") == 0)
+        {
+            if (i == startIndex)
+            {
+                n = readIntAttribute();
+                m = readIntAttribute();
+            }
+            tableSwap(i, n - 1, m - 1);
+        }
+
+        if (strcmp(currentCommand, "copy") == 0)
+        {
+            if (i == startIndex)
+            {
+                n = readIntAttribute();
+                m = readIntAttribute();
+            }
+            tableCopy(i, n - 1, m - 1);
+        }
+        if (strcmp(currentCommand, "int") == 0)
+        {
+            if (i == startIndex)
+                c = readIntAttribute();
+
+            tableInt(i, c - 1);
+        }
     }
+
     return false;
 }
 
@@ -414,7 +551,7 @@ void writeTable()
 
 int main(int argc, char *argv[])
 {
-    argc_g = argc; // novije globalnye peremennye
+    argc_g = argc; // pro zjednoduseni funkci,kde to potrebujeme
     argv_g = argv;
 
     initDelim(argc, argv);
