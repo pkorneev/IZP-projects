@@ -31,6 +31,8 @@ void initDelim() // function (void)
 
     //strcmp sravnenie strok return: -1/0/1
     //strlen dlina stroki
+    if (argc_g == 1)
+        return;
     int isFirstArgumentD = strcmp(argv_g[1], "-d");
     if (isFirstArgumentD == 0)
     {
@@ -273,7 +275,7 @@ void tableRound(int i, int c)
 {
     double cell = stringToDouble(table[i][c]);
     double roundedCell = round(cell);
-    sprintf(table[i][c], "%f", roundedCell);
+    sprintf(table[i][c], "%0.f", roundedCell);
 }
 
 void tableTollower(int i, int c)
@@ -299,15 +301,13 @@ void tableCopy(int i, int n, int m)
 
 void tableInt(int i, int c)
 {
-    for (int i = 0; i < rows; i++)
-    {
-        char *endPTR;
 
-        double buffer = strtod(table[i][c], &endPTR);
-        if (strcmp(endPTR, "") == 0)
-        {
-            sprintf(table[i][c], "%d", (int)trunc(buffer));
-        }
+    char *endPTR;
+
+    double buffer = strtod(table[i][c], &endPTR);
+    if (strcmp(endPTR, "") == 0)
+    {
+        sprintf(table[i][c], "%d", (int)trunc(buffer));
     }
 }
 
