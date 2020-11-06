@@ -288,7 +288,7 @@ void tableTollower(int i, int c)
 
 void tableToupper(int i, int c)
 {
-    for (int j = 0; j < columns; j++)
+    for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
         table[i][c][j] = toupper(table[i][c][j]);
     }
@@ -410,7 +410,7 @@ bool processDataCL()
             if (i == startIndex)
                 c = readIntAttribute();
 
-            tableToupper(i, c);
+            tableToupper(i, c - 1);
         }
 
         if (strcmp(currentCommand, "round") == 0)
