@@ -9,7 +9,7 @@
 #define MAX_COLUMNS 1003
 #define MAX_STRINGLENGTH 100
 
-struct Delim // structura delim
+struct Delim // struct for delim
 {
     char *value;
     int length; // lenght
@@ -21,53 +21,53 @@ int argc_g;
 char **argv_g;
 int currentCLArg = 0;
 
-char table[MAX_ROWS][MAX_COLUMNS][MAX_STRINGLENGTH];
+char table[MAX_ROWS][MAX_COLUMNS][MAX_STRINGLENGTH]; //max possible size of table
 int rows, columns;
 
-void initDelim() // function (void)
+void initDelim() // function for delim initialization
 {
     delim.length = 1;
     delim.value = " ";
 
-    //strcmp sravnenie strok return: -1/0/1
-    //strlen dlina stroki
+    //strcmp str comapier: -1/0/1
+    //strlen length of string
     if (argc_g == 1)
         return;
     int isFirstArgumentD = strcmp(argv_g[1], "-d");
     if (isFirstArgumentD == 0)
     {
-        delim.value = argv_g[2];          // parametr delim value = argv[2]
-        delim.length = strlen(argv_g[2]); // length = strlen (dlina) argv[2]
-        currentCLArg += 3;                // dobavl9em 3
+        delim.value = argv_g[2];          //
+        delim.length = strlen(argv_g[2]); //
+        currentCLArg += 3;                //
     }
     else
     {
-        currentCLArg++; //dobavl9em 1
+        currentCLArg++; //next comand line argument
     }
 }
 
-//проверка что еще можем считать слово из аргументов командной строки
+//if it possible to read word from comand line
 bool isCLFinished()
 {
-    bool result = currentCLArg < argc_g; // peremennaya result = currentCLArg < argc
-    // if (result == false)                 // jesli nepravda-to
+    bool result = currentCLArg < argc_g;
+    // if (result == false)
     //     printf(" ERROR, %d index %d\n", argc_g, currentCLArg);
-    return !result; //return obratniy result
+    return !result; //return
 }
 
-int readIntAttribute()
+int readIntAttribute() // possibility to read argument (int type)
 {
     currentCLArg++;
     if (isCLFinished())
         return -1;
     /**
-     * Если тут есть символы значит возникла ошибка
+     * 
      */
-    char *stopped; //stroka
+    char *stopped; //
 
     /**
-     * Здесь мы записываем в переменную наше число из аргументов комнадной строки. 
-     * Если возникла ошибка то в стоппед пишем что-то. 10 - означает десятеричную систему счиления
+     * whrite number from cl to buffer  
+     * if error -> whrite smth to *stopped. 10 count system 
      */
     int buffer = (int)strtol(argv_g[currentCLArg], &stopped, 10);
     if (*stopped)
@@ -78,7 +78,7 @@ int readIntAttribute()
     return buffer;
 }
 
-char *readStrAttribute()
+char *readStrAttribute() // possibility to read argument from cl (string)
 {
     currentCLArg++;
     if (isCLFinished())
@@ -89,7 +89,7 @@ char *readStrAttribute()
 
     return argv_g[currentCLArg];
 }
-
+// functions for "uprava tabulky"
 void irow(int r)
 {
     rows += 1;
@@ -180,20 +180,20 @@ void dcols(int n, int m)
     columns = columns - (m - n + 1);
 }
 
-void processEditCL() // peremenna9a, kotoraja ni4ego ne vozvrashaet
+void processEditCL() //
 {
     bool nothingToRead = isCLFinished();
     bool changesApplied = false;
     /**
-     * Если закончилась строка с аргументами командной строки - просто выфди из этой функции 
+     * if string with cl arguments is over -> go away from this function
      */
     while (!nothingToRead && !changesApplied)
     {
-        char *currentCommand = argv_g[currentCLArg]; //stroka currentcmd = massivu argv[currentCLArg]
+        char *currentCommand = argv_g[currentCLArg]; //
 
-        if (strcmp(currentCommand, "irow") == 0) //sravnenije strok strcmp
-        {
-            int row = readIntAttribute(); // peremennaya row
+        if (strcmp(currentCommand, "irow") == 0)
+        {                                 //
+            int row = readIntAttribute(); //
             irow(row - 1);
             changesApplied++;
         }
@@ -257,7 +257,7 @@ void processEditCL() // peremenna9a, kotoraja ni4ego ne vozvrashaet
         nothingToRead = isCLFinished();
     }
 }
-
+//functions for "zpracovani dat"
 double stringToDouble(char *str)
 {
     char *errors;
@@ -278,7 +278,7 @@ void tableRound(int i, int c)
     sprintf(table[i][c], "%0.f", roundedCell);
 }
 
-void tableTollower(int i, int c)
+void tableTolower(int i, int c)
 {
     for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
@@ -290,7 +290,7 @@ void tableToupper(int i, int c)
 {
     for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
-        table[i][c][j] = toupper(table[i][c][j]);
+        table[i][c][j] = toupper(table[i][c][j]); //idk if i should to use asci table , but we ve got this function in ctype.h
     }
 }
 
@@ -335,7 +335,7 @@ bool processDataCL()
 
     int containsC = -1;
     char *containsSTR;
-
+    // functions for "selekce radku"
     if (strcmp(currentCommand, "rows") == 0)
     {
         startIndex = readIntAttribute() - 1;
@@ -371,8 +371,8 @@ bool processDataCL()
     {
         if (beginC != -1)
         {
-            // Тут происходит получение номера позиции для подстроки в строке. Если в positionOfBEginStr кладется 0 - то эту строку таблицы мы обрабатываем
-            // иначе пропускаем итерацию цикла
+            // Here you get the position number for the substring in the string. if in positionOfBEginStr goes 0 - than work with this table string
+            // else skip the loop(cyklus) iteration
             char positionOfBeginStr = strstr(table[i][beginC], beginSTR) - table[i][beginC];
 
             if (positionOfBeginStr != 0)
@@ -397,12 +397,12 @@ bool processDataCL()
             cset(i, c - 1, str);
         }
 
-        if (strcmp(currentCommand, "tollower") == 0)
+        if (strcmp(currentCommand, "tolower") == 0)
         {
             if (i == startIndex)
                 c = readIntAttribute();
 
-            tableTollower(i, c - 1);
+            tableTolower(i, c - 1);
         }
 
         if (strcmp(currentCommand, "toupper") == 0)
@@ -452,7 +452,7 @@ bool processDataCL()
     return false;
 }
 
-// Определение позиции символа в строке, для строки абв символ "в" будет 2
+// Determining the position of the character in the string, for the string ABC, the character " b " will be 2
 int positionOfCharacterInString(char *haystack, char needle)
 {
     int i = 0;
@@ -467,13 +467,13 @@ int positionOfCharacterInString(char *haystack, char needle)
     return -1;
 }
 
-// Удаление повторяющихся элементов из строки
+// deleting repeting symbols in string
 char *uniqCharacters(char *string)
 {
     char *output = malloc(strlen(string)); // make a memory for (strlen(string))
     int indexatorOfOutput = 0;
 
-    for (int i = 0; i < strlen(string); i++) // цикл сейчас и = 0, пока и < стрлен , и++
+    for (int i = 0; i < strlen(string); i++) //
     {
         int positionInOutput = positionOfCharacterInString(output, string[i]);
         if (positionInOutput == -1)
@@ -504,6 +504,7 @@ size_t substrCount(char *str, char *substr)
 
     return 0;
 }
+// function for posibility to read the table
 void readTable()
 {
     char row[10240];
