@@ -14,9 +14,8 @@ struct Delim // struct for delim
     char *value;
     int length; // lenght
     /* data */
-};
+} delim;
 
-struct Delim delim;
 int argc_g;
 char **argv_g;
 int currentCLArg = 0;
@@ -132,21 +131,22 @@ void drows(int n, int m)
     }
     rows = rows - (m - n + 1);
 }
+
 void icol(int c)
 {
+    printf("%s", table[0][0]);
     for (int i = 0; i < rows; i++)
     {
-
-        for (int j = columns; j >= c; j--)
+        for (int j = columns - 1; j >= c; j--)
         {
             strcpy(table[i][j + 1], table[i][j]);
         }
     }
-    columns += 1;
-    for (int i = 0; i < columns; i++)
+    for (int i = 0; i < rows; i++)
     {
         strcpy(table[i][c], "");
     }
+    columns += 1;
 }
 
 void dcol(int c)
@@ -221,8 +221,8 @@ void processEditCL() //
         }
         if (strcmp(currentCommand, "icol") == 0)
         {
-            int row = readIntAttribute();
-            icol(row - 1);
+            int c = readIntAttribute();
+            icol(c - 1);
             changesApplied++;
         }
         if (strcmp(currentCommand, "acol") == 0)
@@ -338,9 +338,26 @@ bool processDataCL()
     // functions for "selekce radku"
     if (strcmp(currentCommand, "rows") == 0)
     {
-        startIndex = readIntAttribute() - 1;
-        endIndex = readIntAttribute();
+        if (currentCLArg + 1 < argc_g - 1 && strcmp(argv_g[currentCLArg + 1], "-") == 0)
+        {
+            startIndex = rows;
+            currentCLArg++;
+        }
+        else
+        {
+            startIndex = readIntAttribute();
+        }
 
+        if (currentCLArg + 1 < argc_g - 1 && strcmp(argv_g[currentCLArg + 1], "-") == 0)
+        {
+            endIndex = rows;
+            currentCLArg++;
+        }
+        else
+        {
+            endIndex = readIntAttribute();
+        }
+        startIndex--;
         currentCLArg++;
         currentCommand = argv_g[currentCLArg];
     }
@@ -468,9 +485,8 @@ int positionOfCharacterInString(char *haystack, char needle)
 }
 
 // deleting repeting symbols in string
-char *uniqCharacters(char *string)
+void uniqCharacters(char *string, char *output)
 {
-    char *output = malloc(strlen(string)); // make a memory for (strlen(string))
     int indexatorOfOutput = 0;
 
     for (int i = 0; i < strlen(string); i++) //
@@ -482,40 +498,22 @@ char *uniqCharacters(char *string)
             indexatorOfOutput++;
         }
     }
-
-    return output;
 }
-size_t substrCount(char *str, char *substr)
-{
-    printf(" Created new array");
 
-    int countInSub = strlen(str);
-    printf(" Created new array");
-
-    char *firsLine = malloc(strlen(str));
-    // strcpy(firsLine, str);
-    int endOfFirstLine = 0;
-
-    for (; str[endOfFirstLine] != '\n'; endOfFirstLine++)
-    {
-        firsLine[endOfFirstLine] = str[endOfFirstLine];
-    }
-    printf("%s", firsLine);
-
-    return 0;
-}
-// function for posibility to read the table
 void readTable()
 {
     char row[10240];
 
-    int IsPossibleToRead = scanf("%s", row);
     int i;
-    while (IsPossibleToRead > 0)
+    while (fgets(row, 10240, stdin))
     {
+        int nPos = strlen(row) - 1;
+        if (strstr(row, "\n") != NULL)
+        {
+            row[nPos] = '\0';
+        }
 
         char *bufferString = strtok(row, delim.value);
-
         while (bufferString != NULL)
         {
             if (rows == 0)
@@ -527,7 +525,6 @@ void readTable()
             bufferString = strtok(NULL, delim.value);
             i++;
         }
-        IsPossibleToRead = scanf("%s", row);
         rows++;
 
         i = 0;
@@ -544,9 +541,10 @@ void writeTable()
         {
             printf("%s", table[i][j]);
             if (j < columns - 1)
-                printf("%s", delim.value);
+                printf("%c", delim.value[0]);
         }
-        printf("\n");
+        if (i < rows - 1)
+            printf("\n");
     }
 }
 
@@ -556,7 +554,12 @@ int main(int argc, char *argv[])
     argv_g = argv;
 
     initDelim(argc, argv);
-    delim.value = uniqCharacters(delim.value);
+    char uniqueDelim[MAX_STRINGLENGTH] = "";
+    if (delim.length > 1)
+    {
+        uniqCharacters(delim.value, uniqueDelim);
+        strcpy(delim.value, uniqueDelim);
+    }
 
     readTable();
 
