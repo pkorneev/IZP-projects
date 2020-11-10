@@ -45,6 +45,23 @@ void initDelim() // function for delim initialization
     }
 }
 
+char *strsep(char **stringp, const char *delim)
+{
+    char *begin, *end;
+    begin = *stringp;
+    if (begin == NULL)
+        return NULL;
+    end = begin + strcspn(begin, delim);
+    if (*end)
+    {
+        *end++ = '\0';
+        *stringp = end;
+    }
+    else
+        *stringp = NULL;
+    return begin;
+}
+
 //if it possible to read word from comand line
 bool isCLFinished()
 {
@@ -195,18 +212,18 @@ void processEditCL() //
         {                                 //
             int row = readIntAttribute(); //
             irow(row - 1);
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "arow") == 0)
         {
             rows += 1;
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "drow") == 0)
         {
             int row = readIntAttribute();
             drow(row - 1);
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "drows") == 0)
         {
@@ -217,24 +234,24 @@ void processEditCL() //
                 printf("Druhe cislo musi byt >= prvniho \n");
             }
             drows(n - 1, m - 1);
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "icol") == 0)
         {
             int c = readIntAttribute();
             icol(c - 1);
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "acol") == 0)
         {
             columns += 1;
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "dcol") == 0)
         {
             int row = readIntAttribute();
             dcol(row);
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "dcols") == 0)
         {
@@ -246,7 +263,7 @@ void processEditCL() //
                 return;
             }
             dcols(n - 1, m - 1);
-            changesApplied++;
+            changesApplied = true;
         }
 
         if (!changesApplied)
@@ -473,7 +490,7 @@ bool processDataCL()
 int positionOfCharacterInString(char *haystack, char needle)
 {
     int i = 0;
-    while (i != strlen(haystack)) // while strlen of arr haystack wont be i, repeat
+    while (i != (int)strlen(haystack)) // while strlen of arr haystack wont be i, repeat
     {
         if (haystack[i] == needle)
         {
@@ -489,7 +506,7 @@ void uniqCharacters(char *string, char *output)
 {
     int indexatorOfOutput = 0;
 
-    for (int i = 0; i < strlen(string); i++) //
+    for (int i = 0; i < (int)strlen(string); i++) //
     {
         int positionInOutput = positionOfCharacterInString(output, string[i]);
         if (positionInOutput == -1)
@@ -513,8 +530,10 @@ void readTable()
             row[nPos] = '\0';
         }
 
-        char *bufferString = strtok(row, delim.value);
-        while (bufferString != NULL)
+        char *bufferString;
+        char *bufferStringPointer = row;
+
+        while ((bufferString = strsep(&bufferStringPointer, delim.value)) != NULL)
         {
             if (rows == 0)
             {
@@ -522,7 +541,6 @@ void readTable()
             }
 
             strcpy(table[rows][i], bufferString);
-            bufferString = strtok(NULL, delim.value);
             i++;
         }
         rows++;
