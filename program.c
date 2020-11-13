@@ -28,7 +28,7 @@ void initDelim() // function for delim initialization
     delim.length = 1;
     delim.value = " ";
 
-    //strcmp str comapier: -1/0/1
+    //strcmp str compaier: -1/0/1
     //strlen length of string
     if (argc_g == 1)
         return;
@@ -45,7 +45,7 @@ void initDelim() // function for delim initialization
     }
 }
 
-char *strsep(char **stringp, const char *delim)
+char *strsep(char **stringp, const char *delim) //function for separating strings to substrings by delim
 {
     char *begin, *end;
     begin = *stringp;
@@ -83,7 +83,7 @@ int readIntAttribute() // possibility to read argument (int type)
 
     /**
      * whrite number from cl to buffer  
-     * if error -> whrite smth to *stopped. 10 count system 
+     * if error -> whrite smth to *stopped. 10 count system (Decade)
      */
     int buffer = (int)strtol(argv_g[currentCLArg], &stopped, 10);
     if (*stopped)
@@ -106,14 +106,14 @@ char *readStrAttribute() // possibility to read argument from cl (string)
     return argv_g[currentCLArg];
 }
 // functions for "uprava tabulky"
-void irow(int r)
+void irow(int r) // add string before string r>0
 {
     rows += 1;
-    for (int i = rows; i >= r; i--)
+    for (int i = rows; i >= r; i--) //running rows
     {
-        for (int j = 0; j < columns; j++)
+        for (int j = 0; j < columns; j++) //running collumns
         {
-            strcpy(table[i + 1][j], table[i][j]);
+            strcpy(table[i + 1][j], table[i][j]); //copy to .....from
         }
     }
 
@@ -122,7 +122,7 @@ void irow(int r)
         strcpy(table[r][i], "");
     }
 }
-void drow(int r)
+void drow(int r) //delete string r>0
 {
     rows -= 1;
     for (int i = r; i < rows; i++)
@@ -133,7 +133,7 @@ void drow(int r)
         }
     }
 }
-void drows(int n, int m)
+void drows(int n, int m) //delete strings from n to m
 {
 
     int k = m + 1;
@@ -149,9 +149,8 @@ void drows(int n, int m)
     rows = rows - (m - n + 1);
 }
 
-void icol(int c)
+void icol(int c) //add column before column c
 {
-    printf("%s", table[0][0]);
     for (int i = 0; i < rows; i++)
     {
         for (int j = columns - 1; j >= c; j--)
@@ -166,7 +165,7 @@ void icol(int c)
     columns += 1;
 }
 
-void dcol(int c)
+void dcol(int c) //delete columns c
 {
 
     for (int i = 0; i < rows; i++)
@@ -182,7 +181,7 @@ void dcol(int c)
 /**
  * This function removes range of columns
  */
-void dcols(int n, int m)
+void dcols(int n, int m) //delete columns form n to m
 {
     for (int i = 0; i < rows; i++)
     {
@@ -208,9 +207,9 @@ void processEditCL() //
     {
         char *currentCommand = argv_g[currentCLArg]; //
 
-        if (strcmp(currentCommand, "irow") == 0)
-        {                                 //
-            int row = readIntAttribute(); //
+        if (strcmp(currentCommand, "irow") == 0) //if current CL command is irow - do function irow etc...
+        {                                        //
+            int row = readIntAttribute();        //
             irow(row - 1);
             changesApplied = true;
         }
@@ -229,7 +228,7 @@ void processEditCL() //
         {
             int n = readIntAttribute();
             int m = readIntAttribute();
-            if (m > n)
+            if (m < n)
             {
                 printf("Druhe cislo musi byt >= prvniho \n");
             }
@@ -267,7 +266,7 @@ void processEditCL() //
         }
 
         if (!changesApplied)
-            break;
+            break; //
 
         changesApplied = false;
         currentCLArg++;
@@ -283,19 +282,19 @@ double stringToDouble(char *str)
     return output;
 }
 
-void cset(int i, int c, char *str)
+void cset(int i, int c, char *str) //do buňky ve sloupci C bude nastaven řetězec STR.
 {
     strcpy(table[i][c], str);
 }
 
-void tableRound(int i, int c)
+void tableRound(int i, int c) //ve sloupci C zaokrouhlí číslo na celé
 {
     double cell = stringToDouble(table[i][c]);
     double roundedCell = round(cell);
     sprintf(table[i][c], "%0.f", roundedCell);
 }
 
-void tableTolower(int i, int c)
+void tableTolower(int i, int c) //řetězec ve sloupci C bude převeden na malá písmena
 {
     for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
@@ -303,7 +302,7 @@ void tableTolower(int i, int c)
     }
 }
 
-void tableToupper(int i, int c)
+void tableToupper(int i, int c) //řetězec ve sloupce C bude převeden na velká písmena
 {
     for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
@@ -311,12 +310,12 @@ void tableToupper(int i, int c)
     }
 }
 
-void tableCopy(int i, int n, int m)
+void tableCopy(int i, int n, int m) //přepíše obsah buněk ve sloupci M hodnotami ze sloupce N
 {
     strcpy(table[i][m], table[i][n]);
 }
 
-void tableInt(int i, int c)
+void tableInt(int i, int c) //odstraní desetinnou část čísla ve sloupci C
 {
 
     char *endPTR;
@@ -327,8 +326,30 @@ void tableInt(int i, int c)
         sprintf(table[i][c], "%d", (int)trunc(buffer));
     }
 }
+void tableMove(int i, int n, int m) //přesune sloupec N před sloupec M.
+{
 
-void tableSwap(int i, int n, int m)
+    char buffer[100];
+    strcpy(buffer, table[i][n - 1]);
+    if (n <= m)
+    {
+        for (int j = n - 1; j < m - 1; j++)
+        {
+            strcpy(table[i][j], table[i][j + 1]);
+        }
+        strcpy(table[i][m - 2], buffer);
+    }
+    else
+    {
+        for (int j = n - 1; j > m - 1; j--)
+        {
+            strcpy(table[i][j], table[i][j - 1]);
+        }
+        strcpy(table[i][m - 1], buffer);
+    }
+}
+
+void tableSwap(int i, int n, int m) //zamění hodnoty buněk ve sloupcích N a M.
 {
     char buffer[MAX_STRINGLENGTH];
 
@@ -464,6 +485,15 @@ bool processDataCL()
             }
             tableSwap(i, n - 1, m - 1);
         }
+        if (strcmp(currentCommand, "move") == 0)
+        {
+            if (i == startIndex)
+            {
+                n = readIntAttribute();
+                m = readIntAttribute();
+            }
+            tableMove(i, n, m);
+        }
 
         if (strcmp(currentCommand, "copy") == 0)
         {
@@ -489,10 +519,11 @@ bool processDataCL()
 // Determining the position of the character in the string, for the string ABC, the character " b " will be 2
 int positionOfCharacterInString(char *haystack, char needle)
 {
+
     int i = 0;
     while (i != (int)strlen(haystack)) // while strlen of arr haystack wont be i, repeat
     {
-        if (haystack[i] == needle)
+        if (haystack[i] == needle) //searching needle in the haystack :)
         {
             return i;
         }
@@ -549,7 +580,7 @@ void readTable()
     }
 }
 
-void writeTable()
+void writeTable() //write sells to the table
 {
     int i;
     for (i = 0; i < rows; i++)
