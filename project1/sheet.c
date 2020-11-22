@@ -4,81 +4,96 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include <math.h>
 #define MAX_ROWS 1003
 #define MAX_COLUMNS 1003
 #define MAX_STRINGLENGTH 100
 
-struct Delim // structura delim
+struct Delim // struct for delim
 {
     char *value;
     int length; // lenght
     /* data */
-};
+} delim;
 
-struct Delim delim;
 int argc_g;
 char **argv_g;
 int currentCLArg = 0;
 
-char table[MAX_ROWS][MAX_COLUMNS][MAX_STRINGLENGTH];
+char table[MAX_ROWS][MAX_COLUMNS][MAX_STRINGLENGTH]; //max possible size of table
 int rows, columns;
 
-void initDelim() // function (void)
+void initDelim() // function for delim initialization
 {
     delim.length = 1;
     delim.value = " ";
 
-    //strcmp sravnenie strok return: -1/0/1
-    //strlen dlina stroki
+    //strcmp str compaier: -1/0/1
+    //strlen length of string
     if (argc_g == 1)
         return;
     int isFirstArgumentD = strcmp(argv_g[1], "-d");
     if (isFirstArgumentD == 0)
     {
-        delim.value = argv_g[2];          // parametr delim value = argv[2]
-        delim.length = strlen(argv_g[2]); // length = strlen (dlina) argv[2]
-        currentCLArg += 3;                // dobavl9em 3
+        delim.value = argv_g[2];          //
+        delim.length = strlen(argv_g[2]); //
+        currentCLArg += 3;                //
     }
     else
     {
-        currentCLArg++; //dobavl9em 1
+        currentCLArg++; //next comand line argument
     }
 }
 
-//проверка что еще можем считать слово из аргументов командной строки
-bool isCLFinished()
+char *strsep(char **stringp, const char *delim) //function for separating strings to substrings by delim
 {
-    bool result = currentCLArg < argc_g; // peremennaya result = currentCLArg < argc
-    // if (result == false)                 // jesli nepravda-to
-    //     printf(" ERROR, %d index %d\n", argc_g, currentCLArg);
-    return !result; //return obratniy result
+    char *begin, *end;
+    begin = *stringp;
+    if (begin == NULL)
+        return NULL;
+    end = begin + strcspn(begin, delim);
+    if (*end)
+    {
+        *end++ = '\0';
+        *stringp = end;
+    }
+    else
+        *stringp = NULL;
+    return begin;
 }
 
-int readIntAttribute()
+//if it possible to read word from comand line
+bool isCLFinished()
+{
+    bool result = currentCLArg < argc_g;
+    // if (result == false)
+    //     printf(" ERROR, %d index %d\n", argc_g, currentCLArg);
+    return !result; //return
+}
+
+int readIntAttribute() // possibility to read argument (int type)
 {
     currentCLArg++;
     if (isCLFinished())
         return -1;
     /**
-     * Если тут есть символы значит возникла ошибка
+     * 
      */
-    char *stopped; //stroka
+    char *stopped; //
 
     /**
-     * Здесь мы записываем в переменную наше число из аргументов комнадной строки. 
-     * Если возникла ошибка то в стоппед пишем что-то. 10 - означает десятеричную систему счиления
+     * whrite number from cl to buffer  
+     * if error -> whrite smth to *stopped. 10 count system (Decade)
      */
     int buffer = (int)strtol(argv_g[currentCLArg], &stopped, 10);
     if (*stopped)
     {
         printf("\n Cant read attribute %s, one of possible reason is lack of null-char \n", argv_g[currentCLArg]);
-        return false;
+        return 0;
     }
     return buffer;
 }
 
-char *readStrAttribute()
+char *readStrAttribute() // possibility to read argument from cl (string)
 {
     currentCLArg++;
     if (isCLFinished())
@@ -89,15 +104,15 @@ char *readStrAttribute()
 
     return argv_g[currentCLArg];
 }
-
-void irow(int r)
+// functions for "uprava tabulky"
+void irow(int r) // add string before string r>0
 {
     rows += 1;
-    for (int i = rows; i >= r; i--)
+    for (int i = rows; i >= r; i--) //running rows
     {
-        for (int j = 0; j < columns; j++)
+        for (int j = 0; j < columns; j++) //running collumns
         {
-            strcpy(table[i + 1][j], table[i][j]);
+            strcpy(table[i + 1][j], table[i][j]); //copy to .....from
         }
     }
 
@@ -106,7 +121,7 @@ void irow(int r)
         strcpy(table[r][i], "");
     }
 }
-void drow(int r)
+void drow(int r) //delete string r>0
 {
     rows -= 1;
     for (int i = r; i < rows; i++)
@@ -117,7 +132,7 @@ void drow(int r)
         }
     }
 }
-void drows(int n, int m)
+void drows(int n, int m) //delete strings from n to m
 {
 
     int k = m + 1;
@@ -132,24 +147,24 @@ void drows(int n, int m)
     }
     rows = rows - (m - n + 1);
 }
-void icol(int c)
+
+void icol(int c) //add column before column c
 {
     for (int i = 0; i < rows; i++)
     {
-
-        for (int j = columns; j >= c; j--)
+        for (int j = columns - 1; j >= c; j--)
         {
             strcpy(table[i][j + 1], table[i][j]);
         }
     }
-    columns += 1;
-    for (int i = 0; i < columns; i++)
+    for (int i = 0; i < rows; i++)
     {
         strcpy(table[i][c], "");
     }
+    columns += 1;
 }
 
-void dcol(int c)
+void dcol(int c) //delete columns c
 {
 
     for (int i = 0; i < rows; i++)
@@ -165,7 +180,7 @@ void dcol(int c)
 /**
  * This function removes range of columns
  */
-void dcols(int n, int m)
+void dcols(int n, int m) //delete columns form n to m
 {
     for (int i = 0; i < rows; i++)
     {
@@ -180,61 +195,61 @@ void dcols(int n, int m)
     columns = columns - (m - n + 1);
 }
 
-void processEditCL() // peremenna9a, kotoraja ni4ego ne vozvrashaet
+void processEditCL() //
 {
     bool nothingToRead = isCLFinished();
     bool changesApplied = false;
     /**
-     * Если закончилась строка с аргументами командной строки - просто выфди из этой функции 
+     * if string with cl arguments is over -> go away from this function
      */
     while (!nothingToRead && !changesApplied)
     {
-        char *currentCommand = argv_g[currentCLArg]; //stroka currentcmd = massivu argv[currentCLArg]
+        char *currentCommand = argv_g[currentCLArg]; //
 
-        if (strcmp(currentCommand, "irow") == 0) //sravnenije strok strcmp
-        {
-            int row = readIntAttribute(); // peremennaya row
+        if (strcmp(currentCommand, "irow") == 0) //if current CL command is irow - do function irow etc...
+        {                                        //
+            int row = readIntAttribute();        //
             irow(row - 1);
-            changesApplied++;
+            changesApplied = true;
         }
-        if (strcmp(currentCommand, "arow") == 0)
+        if (strcmp(currentCommand, "arow") == 0) //  ĐĐ´ĐľŃŃ ĐżŃĐžĐ¸ŃŃĐžĐ´Đ¸Ń Đ˛ŃŃĐ°Đ˛ĐşĐ° ŃŃĐ´Đ° Đ˛ ĐşĐžĐ˝ĐľŃ
         {
             rows += 1;
-            changesApplied++;
+            changesApplied = true;
         }
-        if (strcmp(currentCommand, "drow") == 0)
+        if (strcmp(currentCommand, "drow") == 0) // ĐĄŃĐ°Đ˛Đ˝Đ¸Đ˛Đ°ĐľĐź ŃĐľĐşŃŃŃŃ ĐşĐžĐźĐ°Đ˝Đ´Ń Ń ĐžĐśĐ¸Đ´Đ°ĐľĐźĐžĐš, Đ˛ ŃĐťŃŃĐ°Đľ ŃĐ°Đ˛ĐľĐ˝ŃŃĐ˛Đ° - Đ˛ŃĐˇŃĐ˛Đ°ĐľĐź ĐžĐąŃĐ°ĐąĐžŃŃĐ¸Đş
         {
             int row = readIntAttribute();
             drow(row - 1);
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "drows") == 0)
         {
             int n = readIntAttribute();
             int m = readIntAttribute();
-            if (m > n)
+            if (m < n)
             {
                 printf("Druhe cislo musi byt >= prvniho \n");
             }
             drows(n - 1, m - 1);
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "icol") == 0)
         {
-            int row = readIntAttribute();
-            icol(row - 1);
-            changesApplied++;
+            int c = readIntAttribute();
+            icol(c - 1);
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "acol") == 0)
         {
             columns += 1;
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "dcol") == 0)
         {
             int row = readIntAttribute();
             dcol(row);
-            changesApplied++;
+            changesApplied = true;
         }
         if (strcmp(currentCommand, "dcols") == 0)
         {
@@ -246,39 +261,50 @@ void processEditCL() // peremenna9a, kotoraja ni4ego ne vozvrashaet
                 return;
             }
             dcols(n - 1, m - 1);
-            changesApplied++;
+            changesApplied = true;
         }
 
         if (!changesApplied)
-            break;
+            break; //
 
         changesApplied = false;
         currentCLArg++;
         nothingToRead = isCLFinished();
     }
 }
-
+//functions for "zpracovani dat"
 double stringToDouble(char *str)
 {
     char *errors;
     double output = strtod(str, &errors);
-
     return output;
 }
 
-void cset(int i, int c, char *str)
+void cset(int i, int c, char *str) //do buĹky ve sloupci C bude nastaven ĹetÄzec STR.
 {
     strcpy(table[i][c], str);
 }
 
-void tableRound(int i, int c)
+void tableRound(int i, int c) //ve sloupci C zaokrouhlĂ­ ÄĂ­slo na celĂŠ
 {
-    double cell = stringToDouble(table[i][c]);
-    double roundedCell = round(cell);
-    sprintf(table[i][c], "%0.f", roundedCell);
+    char *endPTR;
+    double cell = strtod(table[i][c], &endPTR);
+
+    int cellTruncated = (int)cell;
+    if (strcmp(endPTR, "") == 0)
+    {
+        if (cell - cellTruncated >= 0.5)
+        {
+            sprintf(table[i][c], "%d", cellTruncated + 1);
+        }
+        else
+        {
+            sprintf(table[i][c], "%d", cellTruncated);
+        }
+    }
 }
 
-void tableTollower(int i, int c)
+void tableTolower(int i, int c) //ĹetÄzec ve sloupci C bude pĹeveden na malĂĄ pĂ­smena
 {
     for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
@@ -286,20 +312,20 @@ void tableTollower(int i, int c)
     }
 }
 
-void tableToupper(int i, int c)
+void tableToupper(int i, int c) //ĹetÄzec ve sloupce C bude pĹeveden na velkĂĄ pĂ­smena
 {
-    for (int j = 0; j < columns; j++)
+    for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
-        table[i][c][j] = toupper(table[i][c][j]);
+        table[i][c][j] = toupper(table[i][c][j]); //idk if i should to use asci table , but we ve got this function in ctype.h
     }
 }
 
-void tableCopy(int i, int n, int m)
+void tableCopy(int i, int n, int m) //pĹepĂ­ĹĄe obsah bunÄk ve sloupci M hodnotami ze sloupce N
 {
     strcpy(table[i][m], table[i][n]);
 }
 
-void tableInt(int i, int c)
+void tableInt(int i, int c) //odstranĂ­ desetinnou ÄĂĄst ÄĂ­sla ve sloupci C
 {
 
     char *endPTR;
@@ -307,11 +333,33 @@ void tableInt(int i, int c)
     double buffer = strtod(table[i][c], &endPTR);
     if (strcmp(endPTR, "") == 0)
     {
-        sprintf(table[i][c], "%d", (int)trunc(buffer));
+        sprintf(table[i][c], "%d", (int)buffer);
+    }
+}
+void tableMove(int i, int n, int m) //pĹesune sloupec N pĹed sloupec M.
+{
+
+    char buffer[100];
+    strcpy(buffer, table[i][n - 1]);
+    if (n <= m)
+    {
+        for (int j = n - 1; j < m - 1; j++)
+        {
+            strcpy(table[i][j], table[i][j + 1]);
+        }
+        strcpy(table[i][m - 2], buffer);
+    }
+    else
+    {
+        for (int j = n - 1; j > m - 1; j--)
+        {
+            strcpy(table[i][j], table[i][j - 1]);
+        }
+        strcpy(table[i][m - 1], buffer);
     }
 }
 
-void tableSwap(int i, int n, int m)
+void tableSwap(int i, int n, int m) //zamÄnĂ­ hodnoty bunÄk ve sloupcĂ­ch N a M.
 {
     char buffer[MAX_STRINGLENGTH];
 
@@ -327,7 +375,7 @@ bool processDataCL()
         return false;
 
     char *currentCommand = argv_g[currentCLArg];
-    // Proccess if we have `rows` or `beginwith` or `contains`
+    // Proccess if we have `rows` or `beginswith` or `contains`
 
     int startIndex = 0, endIndex = rows;
     int beginC = -1;
@@ -335,17 +383,34 @@ bool processDataCL()
 
     int containsC = -1;
     char *containsSTR;
-
+    // functions for "selekce radku"
     if (strcmp(currentCommand, "rows") == 0)
     {
-        startIndex = readIntAttribute() - 1;
-        endIndex = readIntAttribute();
+        if (currentCLArg + 1 < argc_g - 1 && strcmp(argv_g[currentCLArg + 1], "-") == 0)
+        {
+            startIndex = rows;
 
+            currentCLArg++;
+        }
+        else
+        {
+            startIndex = readIntAttribute();
+        }
+        if (currentCLArg + 1 < argc_g - 1 && strcmp(argv_g[currentCLArg + 1], "-") == 0)
+        {
+            endIndex = rows;
+            currentCLArg++;
+        }
+        else
+        {
+            endIndex = readIntAttribute();
+        }
+        startIndex--;
         currentCLArg++;
         currentCommand = argv_g[currentCLArg];
     }
 
-    if (strcmp(currentCommand, "beginwith") == 0)
+    if (strcmp(currentCommand, "beginswith") == 0)
     {
         beginC = readIntAttribute() - 1;
         beginSTR = readStrAttribute();
@@ -367,12 +432,15 @@ bool processDataCL()
     int c, n, m;
     char *str;
 
+    bool firstRead = true;
+
     for (int i = startIndex; i < endIndex; i++)
     {
+
         if (beginC != -1)
         {
-            // Тут происходит получение номера позиции для подстроки в строке. Если в positionOfBEginStr кладется 0 - то эту строку таблицы мы обрабатываем
-            // иначе пропускаем итерацию цикла
+            // Here you get the position number for the substring in the string. if in positionOfBEginStr goes 0 - than work with this table string
+            // else skip the loop(cyklus) iteration
             char positionOfBeginStr = strstr(table[i][beginC], beginSTR) - table[i][beginC];
 
             if (positionOfBeginStr != 0)
@@ -388,77 +456,95 @@ bool processDataCL()
 
         if (strcmp(currentCommand, "cset") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
             {
                 c = readIntAttribute();
                 str = readStrAttribute();
             }
 
             cset(i, c - 1, str);
+            firstRead = false;
         }
 
-        if (strcmp(currentCommand, "tollower") == 0)
+        if (strcmp(currentCommand, "tolower") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
                 c = readIntAttribute();
 
-            tableTollower(i, c - 1);
+            tableTolower(i, c - 1);
+            firstRead = false;
         }
 
         if (strcmp(currentCommand, "toupper") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
                 c = readIntAttribute();
 
-            tableToupper(i, c);
+            tableToupper(i, c - 1);
+            firstRead = false;
         }
 
         if (strcmp(currentCommand, "round") == 0)
         {
-            if (i == 0)
+            if (firstRead)
                 c = readIntAttribute();
 
             tableRound(i, c - 1);
+            firstRead = false;
         }
 
         if (strcmp(currentCommand, "swap") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
             {
                 n = readIntAttribute();
                 m = readIntAttribute();
             }
             tableSwap(i, n - 1, m - 1);
+            firstRead = false;
+        }
+        if (strcmp(currentCommand, "move") == 0)
+        {
+            if (firstRead)
+            {
+                n = readIntAttribute();
+                m = readIntAttribute();
+            }
+            tableMove(i, n, m);
+            firstRead = false;
         }
 
         if (strcmp(currentCommand, "copy") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
             {
                 n = readIntAttribute();
                 m = readIntAttribute();
             }
             tableCopy(i, n - 1, m - 1);
+            firstRead = false;
         }
         if (strcmp(currentCommand, "int") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
                 c = readIntAttribute();
 
             tableInt(i, c - 1);
+            firstRead = false;
         }
     }
 
     return false;
 }
 
-// Определение позиции символа в строке, для строки абв символ "в" будет 2
+// Determining the position of the character in the string, for the string ABC, the character " b " will be 2
 int positionOfCharacterInString(char *haystack, char needle)
 {
+
     int i = 0;
-    while (i != strlen(haystack)) // while strlen of arr haystack wont be i, repeat
+    while (i != (int)strlen(haystack)) // while strlen of arr haystack wont be i, repeat
     {
-        if (haystack[i] == needle)
+        if (haystack[i] == needle) //searching needle in the haystack :)
         {
             return i;
         }
@@ -467,13 +553,12 @@ int positionOfCharacterInString(char *haystack, char needle)
     return -1;
 }
 
-// Удаление повторяющихся элементов из строки
-char *uniqCharacters(char *string)
+// deleting repeting symbols in string
+void uniqCharacters(char *string, char *output)
 {
-    char *output = malloc(strlen(string)); // make a memory for (strlen(string))
     int indexatorOfOutput = 0;
 
-    for (int i = 0; i < strlen(string); i++) // цикл сейчас и = 0, пока и < стрлен , и++
+    for (int i = 0; i < (int)strlen(string); i++) //
     {
         int positionInOutput = positionOfCharacterInString(output, string[i]);
         if (positionInOutput == -1)
@@ -482,40 +567,25 @@ char *uniqCharacters(char *string)
             indexatorOfOutput++;
         }
     }
-
-    return output;
 }
-size_t substrCount(char *str, char *substr)
-{
-    printf(" Created new array");
 
-    int countInSub = strlen(str);
-    printf(" Created new array");
-
-    char *firsLine = malloc(strlen(str));
-    // strcpy(firsLine, str);
-    int endOfFirstLine = 0;
-
-    for (; str[endOfFirstLine] != '\n'; endOfFirstLine++)
-    {
-        firsLine[endOfFirstLine] = str[endOfFirstLine];
-    }
-    printf("%s", firsLine);
-
-    return 0;
-}
 void readTable()
 {
     char row[10240];
 
-    int IsPossibleToRead = scanf("%s", row);
     int i;
-    while (IsPossibleToRead > 0)
+    while (fgets(row, 10240, stdin))
     {
+        int nPos = strlen(row) - 1;
+        if (strstr(row, "\n") != NULL)
+        {
+            row[nPos] = '\0';
+        }
 
-        char *bufferString = strtok(row, delim.value);
+        char *bufferString;
+        char *bufferStringPointer = row;
 
-        while (bufferString != NULL)
+        while ((bufferString = strsep(&bufferStringPointer, delim.value)) != NULL)
         {
             if (rows == 0)
             {
@@ -523,17 +593,15 @@ void readTable()
             }
 
             strcpy(table[rows][i], bufferString);
-            bufferString = strtok(NULL, delim.value);
             i++;
         }
-        IsPossibleToRead = scanf("%s", row);
         rows++;
 
         i = 0;
     }
 }
 
-void writeTable()
+void writeTable() //write sells to the table
 {
     int i;
     for (i = 0; i < rows; i++)
@@ -543,9 +611,10 @@ void writeTable()
         {
             printf("%s", table[i][j]);
             if (j < columns - 1)
-                printf("%s", delim.value);
+                printf("%c", delim.value[0]);
         }
-        printf("\n");
+        if (i < rows - 1)
+            printf("\n");
     }
 }
 
@@ -555,7 +624,12 @@ int main(int argc, char *argv[])
     argv_g = argv;
 
     initDelim(argc, argv);
-    delim.value = uniqCharacters(delim.value);
+    char uniqueDelim[MAX_STRINGLENGTH] = "";
+    if (delim.length > 1)
+    {
+        uniqCharacters(delim.value, uniqueDelim);
+        strcpy(delim.value, uniqueDelim);
+    }
 
     readTable();
 

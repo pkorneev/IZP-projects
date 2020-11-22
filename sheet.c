@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include <math.h>
 #define MAX_ROWS 1003
 #define MAX_COLUMNS 1003
 #define MAX_STRINGLENGTH 100
@@ -25,6 +24,10 @@ int rows, columns;
 
 void initDelim() // function for delim initialization
 {
+    // struct Delim *a = &delim;
+
+    // char *u = a->value;
+
     delim.length = 1;
     delim.value = " ";
 
@@ -89,7 +92,7 @@ int readIntAttribute() // possibility to read argument (int type)
     if (*stopped)
     {
         printf("\n Cant read attribute %s, one of possible reason is lack of null-char \n", argv_g[currentCLArg]);
-        return false;
+        return 0;
     }
     return buffer;
 }
@@ -213,12 +216,12 @@ void processEditCL() //
             irow(row - 1);
             changesApplied = true;
         }
-        if (strcmp(currentCommand, "arow") == 0)
+        if (strcmp(currentCommand, "arow") == 0) //  ĐĐ´ĐľŃŃ ĐżŃĐžĐ¸ŃŃĐžĐ´Đ¸Ń Đ˛ŃŃĐ°Đ˛ĐşĐ° ŃŃĐ´Đ° Đ˛ ĐşĐžĐ˝ĐľŃ
         {
             rows += 1;
             changesApplied = true;
         }
-        if (strcmp(currentCommand, "drow") == 0)
+        if (strcmp(currentCommand, "drow") == 0) // ĐĄŃĐ°Đ˛Đ˝Đ¸Đ˛Đ°ĐľĐź ŃĐľĐşŃŃŃŃ ĐşĐžĐźĐ°Đ˝Đ´Ń Ń ĐžĐśĐ¸Đ´Đ°ĐľĐźĐžĐš, Đ˛ ŃĐťŃŃĐ°Đľ ŃĐ°Đ˛ĐľĐ˝ŃŃĐ˛Đ° - Đ˛ŃĐˇŃĐ˛Đ°ĐľĐź ĐžĐąŃĐ°ĐąĐžŃŃĐ¸Đş
         {
             int row = readIntAttribute();
             drow(row - 1);
@@ -278,23 +281,34 @@ double stringToDouble(char *str)
 {
     char *errors;
     double output = strtod(str, &errors);
-
     return output;
 }
 
-void cset(int i, int c, char *str) //do buňky ve sloupci C bude nastaven řetězec STR.
+void cset(int i, int c, char *str) //do buĹky ve sloupci C bude nastaven ĹetÄzec STR.
 {
     strcpy(table[i][c], str);
 }
 
-void tableRound(int i, int c) //ve sloupci C zaokrouhlí číslo na celé
+void tableRound(int i, int c) //ve sloupci C zaokrouhlĂ­ ÄĂ­slo na celĂŠ
 {
-    double cell = stringToDouble(table[i][c]);
-    double roundedCell = round(cell);
-    sprintf(table[i][c], "%0.f", roundedCell);
+    char *endPTR;
+    double cell = strtod(table[i][c], &endPTR);
+
+    int cellTruncated = (int)cell;
+    if (strcmp(endPTR, "") == 0)
+    {
+        if (cell - cellTruncated >= 0.5)
+        {
+            sprintf(table[i][c], "%d", cellTruncated + 1);
+        }
+        else
+        {
+            sprintf(table[i][c], "%d", cellTruncated);
+        }
+    }
 }
 
-void tableTolower(int i, int c) //řetězec ve sloupci C bude převeden na malá písmena
+void tableTolower(int i, int c) //ĹetÄzec ve sloupci C bude pĹeveden na malĂĄ pĂ­smena
 {
     for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
@@ -302,7 +316,7 @@ void tableTolower(int i, int c) //řetězec ve sloupci C bude převeden na malá
     }
 }
 
-void tableToupper(int i, int c) //řetězec ve sloupce C bude převeden na velká písmena
+void tableToupper(int i, int c) //ĹetÄzec ve sloupce C bude pĹeveden na velkĂĄ pĂ­smena
 {
     for (int j = 0; j < MAX_STRINGLENGTH; j++)
     {
@@ -310,12 +324,12 @@ void tableToupper(int i, int c) //řetězec ve sloupce C bude převeden na velk�
     }
 }
 
-void tableCopy(int i, int n, int m) //přepíše obsah buněk ve sloupci M hodnotami ze sloupce N
+void tableCopy(int i, int n, int m) //pĹepĂ­ĹĄe obsah bunÄk ve sloupci M hodnotami ze sloupce N
 {
     strcpy(table[i][m], table[i][n]);
 }
 
-void tableInt(int i, int c) //odstraní desetinnou část čísla ve sloupci C
+void tableInt(int i, int c) //odstranĂ­ desetinnou ÄĂĄst ÄĂ­sla ve sloupci C
 {
 
     char *endPTR;
@@ -323,10 +337,10 @@ void tableInt(int i, int c) //odstraní desetinnou část čísla ve sloupci C
     double buffer = strtod(table[i][c], &endPTR);
     if (strcmp(endPTR, "") == 0)
     {
-        sprintf(table[i][c], "%d", (int)trunc(buffer));
+        sprintf(table[i][c], "%d", (int)buffer);
     }
 }
-void tableMove(int i, int n, int m) //přesune sloupec N před sloupec M.
+void tableMove(int i, int n, int m) //pĹesune sloupec N pĹed sloupec M.
 {
 
     char buffer[100];
@@ -349,7 +363,7 @@ void tableMove(int i, int n, int m) //přesune sloupec N před sloupec M.
     }
 }
 
-void tableSwap(int i, int n, int m) //zamění hodnoty buněk ve sloupcích N a M.
+void tableSwap(int i, int n, int m) //zamÄnĂ­ hodnoty bunÄk ve sloupcĂ­ch N a M.
 {
     char buffer[MAX_STRINGLENGTH];
 
@@ -365,7 +379,7 @@ bool processDataCL()
         return false;
 
     char *currentCommand = argv_g[currentCLArg];
-    // Proccess if we have `rows` or `beginwith` or `contains`
+    // Proccess if we have `rows` or `beginswith` or `contains`
 
     int startIndex = 0, endIndex = rows;
     int beginC = -1;
@@ -379,13 +393,13 @@ bool processDataCL()
         if (currentCLArg + 1 < argc_g - 1 && strcmp(argv_g[currentCLArg + 1], "-") == 0)
         {
             startIndex = rows;
+
             currentCLArg++;
         }
         else
         {
             startIndex = readIntAttribute();
         }
-
         if (currentCLArg + 1 < argc_g - 1 && strcmp(argv_g[currentCLArg + 1], "-") == 0)
         {
             endIndex = rows;
@@ -400,7 +414,7 @@ bool processDataCL()
         currentCommand = argv_g[currentCLArg];
     }
 
-    if (strcmp(currentCommand, "beginwith") == 0)
+    if (strcmp(currentCommand, "beginswith") == 0)
     {
         beginC = readIntAttribute() - 1;
         beginSTR = readStrAttribute();
@@ -422,8 +436,11 @@ bool processDataCL()
     int c, n, m;
     char *str;
 
+    bool firstRead = true;
+
     for (int i = startIndex; i < endIndex; i++)
     {
+
         if (beginC != -1)
         {
             // Here you get the position number for the substring in the string. if in positionOfBEginStr goes 0 - than work with this table string
@@ -443,73 +460,81 @@ bool processDataCL()
 
         if (strcmp(currentCommand, "cset") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
             {
                 c = readIntAttribute();
                 str = readStrAttribute();
             }
 
             cset(i, c - 1, str);
+            firstRead = false;
         }
 
         if (strcmp(currentCommand, "tolower") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
                 c = readIntAttribute();
 
             tableTolower(i, c - 1);
+            firstRead = false;
         }
 
         if (strcmp(currentCommand, "toupper") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
                 c = readIntAttribute();
 
             tableToupper(i, c - 1);
+            firstRead = false;
         }
 
         if (strcmp(currentCommand, "round") == 0)
         {
-            if (i == 0)
+            if (firstRead)
                 c = readIntAttribute();
 
             tableRound(i, c - 1);
+            firstRead = false;
         }
 
         if (strcmp(currentCommand, "swap") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
             {
                 n = readIntAttribute();
                 m = readIntAttribute();
             }
             tableSwap(i, n - 1, m - 1);
+            firstRead = false;
         }
         if (strcmp(currentCommand, "move") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
             {
                 n = readIntAttribute();
                 m = readIntAttribute();
             }
             tableMove(i, n, m);
+            firstRead = false;
         }
 
         if (strcmp(currentCommand, "copy") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
             {
                 n = readIntAttribute();
                 m = readIntAttribute();
             }
             tableCopy(i, n - 1, m - 1);
+            firstRead = false;
         }
         if (strcmp(currentCommand, "int") == 0)
         {
-            if (i == startIndex)
+            if (firstRead)
                 c = readIntAttribute();
 
             tableInt(i, c - 1);
+            firstRead = false;
         }
     }
 
@@ -556,6 +581,7 @@ void readTable()
     while (fgets(row, 10240, stdin))
     {
         int nPos = strlen(row) - 1;
+        //это использовать для убирания символов, вместо \n  проверяем на  \, ", ", ', ' и если найдены, заменяем на пустой символ (а не на \0 как тут). пустой символ это ''
         if (strstr(row, "\n") != NULL)
         {
             row[nPos] = '\0';
