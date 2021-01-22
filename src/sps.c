@@ -1,39 +1,33 @@
+//Xkorni03 IZP second project//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #define VARS_COUNT 10
 
-typedef struct //struct for Delim
+typedef struct //  struct for delim
 {
     char *data;
 } TDelim;
 
-typedef struct //data type for cell
+typedef struct //  struct for cell(data type)
 {
     char *data;
 } TCell;
 
-typedef struct //data type for row
+typedef struct //  struct for row(data type)
 {
     TCell **data;
     int len;
 } TRow;
 
-typedef struct //data type for table
+typedef struct
 {
     TRow **data;
     int len;
 } TTable;
 
-typedef struct //struct for input and output
-{
-    FILE *file;
-    char *filename;
-    int state;
-    char *buffer;
-} TIOmodule;
-
-typedef struct //selection of cells
+typedef struct // selection
 {
     int r1, c1, r2, c2;
 } TSelection;
@@ -44,7 +38,15 @@ typedef struct
     TCell *_vars[10];
 } TVariables;
 
-typedef struct //struct for commands master
+typedef struct // input and output
+{
+    FILE *file;
+    char *filename;
+    int state;
+    char *buffer;
+} TIOmodule;
+
+typedef struct
 {
     TTable *table;
     TIOmodule *table_file;
@@ -56,8 +58,8 @@ typedef struct //struct for commands master
     char *current_command;
     int state;
 } TMaster;
-//default data of delim,cell,file name
-char default_Delim[2] = " ";
+
+char default_Delim[2] = " "; // default data
 char default_Cell[1] = "";
 char default_Filename[8] = "tab.txt";
 char default_CmdDelim[3] = ";\n";
@@ -66,7 +68,6 @@ int default_DoubleMaxLength = 32;
 
 char const *Default_Delim()
 {
-
     return default_Delim;
 }
 
@@ -122,23 +123,23 @@ TDelim *Delim_Create(char const *rv) // create delim
     return this;
 }
 
-char const *Delim_Data(TDelim *this)
+char const *Delim_Data(TDelim *this) // delim data (string)
 {
     return this->data;
 }
 
-char Delim_First(TDelim *this) // first symbol of delim (use in output)
+char Delim_First(TDelim *this) // first symbol of delim
 {
     return *Delim_Data(this);
 }
 
-void Delim_Destroy(TDelim *this) //clear memory (delim)
+void Delim_Destroy(TDelim *this) // clear memmory (delim)
 {
     free(this->data);
     free(this);
 }
 
-int Cell_Parse(char *lv, char const *rv) //parsing cells
+int Cell_Parse(char *lv, char const *rv) // parsing data in cells
 {
     int result = 0;
     strcpy(lv, rv);
@@ -167,20 +168,20 @@ int Cell_Parse(char *lv, char const *rv) //parsing cells
     return result;
 }
 
-TCell *Cell_Create(char const *rv) //create cell
+TCell *Cell_Create(char const *rv) // create cell
 {
-    if (rv == NULL) //if data = NULL-> create default cell (" ")
+    if (rv == NULL)
     {
-        rv = Default_Cell();
+        rv = Default_Cell(); // if nothing to read -> create default cell
     }
-    TCell *this = (TCell *)malloc(sizeof(TCell)); //memory for this sell
+    TCell *this = (TCell *)malloc(sizeof(TCell));
     this->data = (char *)malloc((strlen(rv) + 1) * sizeof(char));
     Cell_Parse(this->data, rv);
     this->data = (char *)realloc(this->data, (strlen(this->data) + 1) * sizeof(char));
     return this;
 }
 
-int Cell_SetData(TCell *this, char const *rv)
+int Cell_SetData(TCell *this, char const *rv) //set data from rv to cell
 {
     free(this->data);
     this->data = (char *)malloc((strlen(rv) + 1) * sizeof(char));
@@ -192,7 +193,7 @@ int Cell_SetData(TCell *this, char const *rv)
     return 0;
 }
 
-int Cell_SetDataDouble(TCell *this, double rv)
+int Cell_SetDataDouble(TCell *this, double rv) //
 {
     free(this->data);
     this->data = (char *)malloc(Default_DoubleMaxLength() * sizeof(char));
@@ -204,12 +205,12 @@ int Cell_SetDataDouble(TCell *this, double rv)
     return 0;
 }
 
-int Cell_Clear(TCell *this) //clear data in cell (not delete cell)
+int Cell_Clear(TCell *this) // clear data in cell
 {
     return Cell_SetData(this, "");
 }
 
-int Cell_Copy(TCell *this, TCell const *rv) //copy data from rv cell to current cell
+int Cell_Copy(TCell *this, TCell const *rv) // copy data from rv sell to current sell
 {
     free(this->data);
     this->data = (char *)malloc((strlen(rv->data) + 1) * sizeof(char));
@@ -217,7 +218,7 @@ int Cell_Copy(TCell *this, TCell const *rv) //copy data from rv cell to current 
     return 0;
 }
 
-void Cell_Destroy(TCell *this) //clear memmory (cell)
+void Cell_Destroy(TCell *this) // clear memmory(cell)
 {
     if (this == NULL)
     {
@@ -227,7 +228,7 @@ void Cell_Destroy(TCell *this) //clear memmory (cell)
     free(this);
 }
 
-int Cell_Swap(TCell *lv, TCell *rv) //swap 2 cells
+int Cell_Swap(TCell *lv, TCell *rv) // swap lv and rv cells
 {
     TCell *temp = Cell_Create(NULL);
     Cell_Copy(temp, lv);
@@ -237,12 +238,12 @@ int Cell_Swap(TCell *lv, TCell *rv) //swap 2 cells
     return 0;
 }
 
-char const *Cell_DataString(TCell *this)
+char const *Cell_DataString(TCell *this) // data in current cell
 {
     return this->data;
 }
 
-int Cell_IsNumber(TCell *this)
+int Cell_IsNumber(TCell *this) //
 {
     char *ptr;
     strtod(this->data, &ptr);
@@ -254,7 +255,7 @@ double Cell_DataDouble(TCell *this)
     return strtod(this->data, NULL);
 }
 
-char *Cell_Encode(TCell *this, char *destination, int dest_size, TDelim *delim)
+char *Cell_Encode(TCell *this, char *destination, int dest_size, TDelim *delim) //
 {
     char const *source = Cell_DataString(this);
     int add_quotes = 0;
@@ -289,9 +290,9 @@ char *Cell_Encode(TCell *this, char *destination, int dest_size, TDelim *delim)
     return destination;
 }
 
-int Row_ParseReturnCount(char *rv, TDelim *delim) //parse string to sbstrings by delim
+int Row_ParseReturnCount(char *rv, TDelim *delim) //parsing row
 {
-    int result = 0;
+    int result = 0; // quantity of сells in the row ( or columns)
     char *token;
     while (1)
     {
@@ -312,7 +313,7 @@ int Row_ParseReturnCount(char *rv, TDelim *delim) //parse string to sbstrings by
             }
         }
         token = strtok(rv, Delim_Data(delim));
-        result++; //quantity of tokens
+        result++;
         if (token == NULL)
         {
             break;
@@ -325,9 +326,9 @@ int Row_ParseReturnCount(char *rv, TDelim *delim) //parse string to sbstrings by
 // "i\"am here"\0123\0"hello"
 // rv[-1] === *(rv - 1)
 // a[b] === *(a + b) === *(b + a) === b[a]
-TRow *Row_Create(char const *rv, TDelim *delim) //create row with cells
+TRow *Row_Create(char const *rv, TDelim *delim) // create the row
 {
-    if (rv == NULL) //if nothing go read make row with 1 sell
+    if (rv == NULL) // if nothing to read -> create default row (1 default cell)
     {
         TRow *this = (TRow *)malloc(sizeof(TRow));
         this->len = 1;
@@ -338,12 +339,12 @@ TRow *Row_Create(char const *rv, TDelim *delim) //create row with cells
     char *buf = (char *)malloc((strlen(rv) + 1) * sizeof(char));
     strcpy(buf, rv);
     TRow *this = (TRow *)malloc(sizeof(TRow));
-    this->len = Row_ParseReturnCount(buf, delim); //quantity of possible cells
+    this->len = Row_ParseReturnCount(buf, delim);
     this->data = (TCell **)malloc(this->len * sizeof(TCell *));
     char *temp = buf;
-    for (int i = 0; i < this->len; ++i) //creating cells
+    for (int i = 0; i < this->len; ++i)
     {
-        this->data[i] = Cell_Create(temp);
+        this->data[i] = Cell_Create(temp); // create cells by delim
         temp += strlen(temp) + 1;
     }
     free(buf);
@@ -367,7 +368,7 @@ TCell *Row_At(TRow *this, int c)
 // a . b c d
 // a[this->len - 1] = a[this->len - 2]
 
-int Row_Insert(TRow *this, int index, TCell *rv)
+int Row_Insert(TRow *this, int index, TCell *rv) //
 {
     if (index < 0 || index > this->len)
     {
@@ -375,7 +376,7 @@ int Row_Insert(TRow *this, int index, TCell *rv)
     }
     if (rv == NULL)
     {
-        rv = Cell_Create(NULL); //create default cell
+        rv = Cell_Create(NULL);
     }
     this->len++;
     this->data = (TCell **)realloc(this->data, this->len * sizeof(TCell *));
@@ -389,7 +390,7 @@ int Row_Insert(TRow *this, int index, TCell *rv)
 
 // a c d d
 
-int Row_Remove(TRow *this, int index)
+int Row_Remove(TRow *this, int index) // remove row from the teble(delete)
 {
     if (this->len == 1)
     {
@@ -409,7 +410,7 @@ int Row_Remove(TRow *this, int index)
     return 0;
 }
 
-void Row_Destroy(TRow *this) //clear memmory (row)
+void Row_Destroy(TRow *this) // clear memmory (row)
 {
     for (int i = 0; i < this->len; ++i)
     {
@@ -418,9 +419,10 @@ void Row_Destroy(TRow *this) //clear memmory (row)
     free(this->data);
     free(this);
 }
-int Table_ParseReturnCount(char *rv) // parsing table
+
+int Table_ParseReturnCount(char *rv) //parse table to rows
 {
-    int result = 0; //quantity of rows in the table
+    int result = 0;
     strtok(rv, "\n");
     do
     {
@@ -429,10 +431,10 @@ int Table_ParseReturnCount(char *rv) // parsing table
     return result;
 }
 
-TTable *Table_Create(char const *rv, TDelim *delim) //create table
+TTable *Table_Create(char const *rv, TDelim *delim) // create table  ( rows and cells in rows)
 {
     TTable *this;
-    if (rv == NULL) //if nothing to create -> create default row
+    if (rv == NULL) // if nothing to read -> create default...
     {
         this = (TTable *)malloc(sizeof(TTable));
         this->len = 1;
@@ -473,12 +475,12 @@ TTable *Table_Create(char const *rv, TDelim *delim) //create table
     return this;
 }
 
-int Table_Height(TTable *this) // quantity of rows
+int Table_Height(TTable *this) // rows count
 {
     return this->len;
 }
 
-int Table_Width(TTable *this) // quantity or columns or cells in the row
+int Table_Width(TTable *this) // columns count or cells in the row
 {
     if (Table_Height(this) == 0)
     {
@@ -526,7 +528,7 @@ int Table_InsertCol(TTable *this, int index)
     return 0;
 }
 
-int Table_RemoveRow(TTable *this, int index) //remove row from the collumn if it possible
+int Table_RemoveRow(TTable *this, int index) // remove row dfrom the table
 {
     if (Table_Height(this) == 1)
     {
@@ -547,7 +549,7 @@ int Table_RemoveRow(TTable *this, int index) //remove row from the collumn if it
     return 0;
 }
 
-int Table_RemoveCol(TTable *this, int index) //remove collumn from the table if it possivle
+int Table_RemoveCol(TTable *this, int index) //remove column from the table
 {
     if (Table_Width(this) == 1)
     {
@@ -564,7 +566,7 @@ int Table_RemoveCol(TTable *this, int index) //remove collumn from the table if 
     return 0;
 }
 
-void Table_Destroy(TTable *this) //clear memmory (table)
+void Table_Destroy(TTable *this) // clear memmory (table)
 {
     for (int i = 0; i < this->len; i++)
     {
@@ -574,87 +576,14 @@ void Table_Destroy(TTable *this) //clear memmory (table)
     free(this);
 }
 
-TIOmodule *IO_Create(char const *filename) // input output
-{
-    if (filename == NULL || strlen(filename) == 0)
-    {
-        filename = Default_Filename();
-    }
-    TIOmodule *this = (TIOmodule *)malloc(sizeof(TIOmodule));
-    this->file = NULL;
-    this->filename = (char *)malloc((strlen(filename) + 1) * sizeof(char));
-    this->state = 0;
-    this->buffer = NULL;
-    strcpy(this->filename, filename);
-    return this;
-}
-
-char *IO_Read(TIOmodule *this) //read from the file
-{
-    printf("Got here\n");
-    this->file = fopen(this->filename, "r"); //read from file
-    if (this->file == NULL)
-    {
-        this->state = -1;
-        return NULL;
-    }
-    this->state = 1;
-    int file_len;
-    for (file_len = 0; !feof(this->file); ++file_len)
-    {
-        printf("%d\n", fgetc(this->file));
-    }
-    printf("%d\n", file_len);
-    rewind(this->file); //set pointer to the beginning of the file
-    this->buffer = (char *)malloc(file_len * sizeof(char));
-    fread((void *)(this->buffer), sizeof(char), file_len - 1, this->file);
-    this->buffer[file_len - 1] = 0;
-    return this->buffer;
-}
-
-int IO_Write(TIOmodule *this, TTable *table, TDelim *delim) //whrite data to file
-{
-    TCell *cell;
-    int L;
-    int buffer_size;
-    char *buffer;
-    this->file = fopen(this->filename, "w");
-
-    for (int i = 0; i < Table_Height(table); i++)
-    {
-
-        for (int j = 0; j < Table_Width(table); j++)
-        {
-            cell = Table_At(table, i, j);
-            L = strlen(Cell_DataString(cell));
-            buffer_size = 2 * L + 2; // worst-case scenario
-            buffer = (char *)malloc(buffer_size * sizeof(char));
-            fprintf(this->file, "%s", Cell_Encode(cell, buffer, buffer_size, delim));
-            if (j < Table_Width(table) - 1)
-                fprintf(this->file, "%c", Delim_First(delim));
-            free(buffer);
-        }
-        fprintf(this->file, "\n");
-    }
-    fclose(this->file);
-    return 0;
-}
-
-void IO_Destroy(TIOmodule *this) //clear memmory (file)
-{
-    fclose(this->file);
-    free(this->filename);
-    free(this->buffer);
-    free(this);
-}
-TSelection *Selection_Create() //create selection of sells
+TSelection *Selection_Create() // create selection of cells
 {
     TSelection *this = (TSelection *)malloc(sizeof(TSelection));
     this->r1 = this->c1 = this->r2 = this->c2 = 0;
     return this;
 }
 
-int Selection_Set(TSelection *this, char const *rv, TTable *table) //set cells data  to selection
+int Selection_Set(TSelection *this, char const *rv, TTable *table) // set data in selected cells
 {
     char *buf = (char *)malloc((strlen(rv) + 1) * sizeof(char));
     strcpy(buf, rv);
@@ -703,7 +632,7 @@ int Selection_Set(TSelection *this, char const *rv, TTable *table) //set cells d
     return 0;
 }
 
-int Selection_IsLegal(TSelection *this, TTable *rv) // is it possible ....
+int Selection_IsLegal(TSelection *this, TTable *rv) // is it possible to sellect these cells
 {
     int h = Table_Height(rv), w = Table_Width(rv);
     if (this->r1 < 0 || this->r1 >= h)
@@ -733,22 +662,23 @@ int Selection_IsLegal(TSelection *this, TTable *rv) // is it possible ....
     return 1;
 }
 
-void Selection_Destroy(TSelection *this) //clear memmory
+void Selection_Destroy(TSelection *this) // clear memmory(selection)
 {
     free(this);
 }
-TVariables *Variables_Create()
+
+TVariables *Variables_Create() // create variables
 {
     TVariables *this = (TVariables *)malloc(sizeof(TVariables));
     this->_var = Selection_Create();
     for (int i = 0; i < VARS_COUNT; ++i)
     {
-        this->_vars[i] = Cell_Create("");
+        this->_vars[i] = Cell_Create(""); //create cells in selection
     }
     return this;
 }
 
-void Variables_Destroy(TVariables *this)
+void Variables_Destroy(TVariables *this) // clear memmory ( variables)
 {
     for (int i = 0; i < VARS_COUNT; ++i)
     {
@@ -758,7 +688,77 @@ void Variables_Destroy(TVariables *this)
     free(this);
 }
 
-TMaster *Master_Create(char const *filename_table, char const *cmd_sequence, char const *delim_str) //start of mastering all commands
+TIOmodule *IO_Create(char const *filename) // input output
+{
+    if (filename == NULL || strlen(filename) == 0)
+    {
+        filename = Default_Filename(); // tab.txt
+    }
+    TIOmodule *this = (TIOmodule *)malloc(sizeof(TIOmodule));
+    this->file = NULL;
+    this->filename = (char *)malloc((strlen(filename) + 1) * sizeof(char));
+    this->state = 0;
+    this->buffer = NULL;
+    strcpy(this->filename, filename);
+    return this;
+}
+
+char *IO_Read(TIOmodule *this) //read data from file
+{
+    this->file = fopen(this->filename, "r");
+    if (this->file == NULL)
+    {
+        this->state = -1;
+        return NULL;
+    }
+    this->state = 1;
+    int file_len;
+    for (file_len = 0; !feof(this->file); ++file_len, fgetc(this->file))
+        ;
+    rewind(this->file);
+    this->buffer = (char *)malloc(file_len * sizeof(char));
+    fread((void *)(this->buffer), sizeof(char), file_len - 1, this->file);
+    this->buffer[file_len - 1] = 0;
+    return this->buffer;
+}
+
+int IO_Write(TIOmodule *this, TTable *table, TDelim *delim) //whrite data to file
+{
+    TCell *cell;
+    int L;
+    int buffer_size;
+    char *buffer;
+    this->file = fopen(this->filename, "w");
+
+    for (int i = 0; i < Table_Height(table); i++)
+    {
+
+        for (int j = 0; j < Table_Width(table); j++)
+        {
+            cell = Table_At(table, i, j);
+            L = strlen(Cell_DataString(cell));
+            buffer_size = 2 * L + 2; // worst-case scenario
+            buffer = (char *)malloc(buffer_size * sizeof(char));
+            fprintf(this->file, "%s", Cell_Encode(cell, buffer, buffer_size, delim));
+            if (j < Table_Width(table) - 1)
+                fprintf(this->file, "%c", Delim_First(delim));
+            free(buffer);
+        }
+        fprintf(this->file, "\n");
+    }
+    fclose(this->file);
+    return 0;
+}
+
+void IO_Destroy(TIOmodule *this) //clear data input output
+{
+    fclose(this->file);
+    free(this->filename);
+    free(this->buffer);
+    free(this);
+}
+
+TMaster *Master_Create(char const *filename_table, char const *cmd_sequence, char const *delim_str) // here the commands start
 {
     if (cmd_sequence == NULL)
     {
@@ -791,7 +791,7 @@ TMaster *Master_Create(char const *filename_table, char const *cmd_sequence, cha
     return this;
 }
 
-int Master_Execute(TMaster *this) //command sequence starts
+int Master_Execute(TMaster *this)
 {
     char *cmd = this->current_command;
     char *temp_str;
@@ -799,7 +799,7 @@ int Master_Execute(TMaster *this) //command sequence starts
     TSelection *temp_sel;
     double temp_num;
     int temp_count;
-    if (cmd == NULL)
+    if (cmd == NULL) // if no commands -> return 0
     {
         return 0;
     }
@@ -1086,12 +1086,12 @@ int Master_ExecuteNext(TMaster *this)
     }
     else if (Master_Execute(this))
     {
-        this->state = -1;
+        this->state = 0;
     }
     return this->state;
 }
 
-void Master_Destroy(TMaster *this) //clear memmory
+void Master_Destroy(TMaster *this) //clear memmory(master)
 {
     if (this->command_file == NULL)
     {
@@ -1105,11 +1105,11 @@ void Master_Destroy(TMaster *this) //clear memmory
     Variables_Destroy(this->variables);
     Selection_Destroy(this->current_selection);
     Delim_Destroy(this->delim);
-    IO_Destroy(this->table_file);
+    //IO_Destroy(this->table_file);
     free(this);
 }
 
-void UI_Start(int argc, char **argv) //user interface
+void UI_Start(int argc, char **argv) // user interface
 {
     char *filename;
     char *cmd_sequence;
@@ -1137,6 +1137,8 @@ void UI_Start(int argc, char **argv) //user interface
     TMaster *master = Master_Create(filename, cmd_sequence, delim);
     while (Master_ExecuteNext(master))
         ;
+    IO_Write(master->table_file, master->table, master->delim);
+    //printf("Maybe...\n");
     Master_Destroy(master);
 }
 
