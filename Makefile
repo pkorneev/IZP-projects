@@ -1,42 +1,21 @@
-TARGET_EXEC ?= sps
+.PHONY: clean pack pdflatex
 
-BUILD_DIR ?= ./build
-SRC_DIRS ?= ./src
+$(proj1).pdf: $(proj1).ps
+	ps2pdf $(proj1).ps
 
-SRCS := $(shell find $(SRC_DIRS) -name *.cpp -or -name *.c -or -name *.s)
-OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
-DEPS := $(OBJS:.o=.d)
+$(PROJ).ps: $(proj1).dvi
+	dvips $(proj1).dvi
 
-INC_DIRS := $(shell find $(SRC_DIRS) -type d)
-INC_FLAGS := $(addprefix -I,$(INC_DIRS))
+$(PROJ).dvi: $(proj1).tex
+	latex $(proj1).tex
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
-CFLAGS = -std=c99 -Wall -Wextra -Werror
+$(PACK).tar.gz: $(proj1).tex
+	tar -czf $(xkorni03-fit).tar.gz Makefile $(proj1).tex
 
-$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+pdflatex: $(proj1).tex
+	pdflatex $(proj1).tex
 
-# assembly
-$(BUILD_DIR)/%.s.o: %.s
-	$(MKDIR_P) $(dir $@)
-	$(AS) $(ASFLAGS) -c $< -o $@
-
-# c source
-$(BUILD_DIR)/%.c.o: %.c
-	$(MKDIR_P) $(dir $@)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
-
-# c++ source
-$(BUILD_DIR)/%.cpp.o: %.cpp
-	$(MKDIR_P) $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
-
-
-.PHONY: clean
+pack: $(xkorni03-fit).tar.gz
 
 clean:
-	$(RM) -r $(BUILD_DIR)
-
--include $(DEPS)
-
-MKDIR_P ?= mkdir -p
+	rm -f $(proj1).aux $(proj1).dvi $(proj1).log $(proj1).ps $(proj1).synctex.gz $(proj1).fls $(proj1).fdb_latexmk
